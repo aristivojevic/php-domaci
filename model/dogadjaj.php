@@ -12,8 +12,7 @@ class Dogadjaj{
     public $user_id;
 }
 
-    public __construct($id=null, $naslov=null, $opis=null, $lokacija=null, $vremeod=null, $vremedo=null, $user_id=null)
-    {
+    public __construct($id=null, $naslov=null, $opis=null, $lokacija=null, $vremeod=null, $vremedo=null, $user_id=null){
         $this->id = $id;
         $this->naslov = $naslov;
         $this->opis = $opis;
