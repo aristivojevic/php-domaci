@@ -1,3 +1,18 @@
+<?php
+require "dbBroker.php";
+require "model/dogadjaj.php";
+
+session_start();
+
+if(!isset($_SESSION['user_id'])){
+	header('Location:index.php');
+	exit();
+}
+
+$data = Dogadjaj::getAll($conn);
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -9,36 +24,39 @@
     <title>Planerko</title>
 </head>
 <body>
-    <div class="form-bg ">
-        <div class="container form pt-0" style="ba">
-            <form action="">
+    <div id="form-bg" class="form-bg ">
+        <div id="form-prikaz" class="container form pt-0" style="ba">
+            <form id="form" action="">
                 <div class="flex-wrapper">
                     <div class="p-5 pb-1" style="flex:1">
+                        <input type="hidden" name="user_id" value="<?php echo $_SESSION['user_id'];?>">
+                        <input name = "id" id="form-id" type="hidden">
                         <div style="flex:1">
                             <label for="naslov">Naslov:</label>
-                            <input class="form-control" name="naslov" type="text">
+                            <input id="form-naslov" class="form-control" name="naslov" type="text">
                         </div>
                         <div style="flex:1">
                             <label for="opis">Opis:</label>
-                            <textarea class="form-control" name="opis" rows="4" cols="50"></textarea>
+                            <textarea id="form-opis" class="form-control" name="opis" rows="4" cols="50"></textarea>
                         </div>
                     </div>
                    <div class="p-5 pb-1" style="flex:1">
                         <div style="flex:1">
                             <label for="lokacija">Lokacija:</label>
-                            <input class="form-control" name="lokacija" type="text">
+                            <input id="form-lokacija" class="form-control" name="lokacija" type="text">
                         </div>
                         <div style="flex:1">
                             <label for="vremeod">Vreme od:</label>
-                            <input class="form-control" name="vremeod" type="datetime-local">
+                            <input id="form-vremeod" class="form-control" name="vremeod" type="datetime-local">
                         </div>
                         <div style="flex:1">
                             <label for="vremedo">Vreme do:</label>
-                            <input class="form-control" name="vremedo" type="datetime-local">
+                            <input id="form-vremedo" class="form-control" name="vremedo" type="datetime-local">
                         </div>
                     </div>
                     <div class="break"></div>
-                    <input type="submit" class="btn btn-primary mb-4" style="margin-left:3rem" value="Potvrdi">
+                    <div style="flex:1"><input type="submit" class="btn btn-primary mb-4" style="margin-left:3rem" value="Potvrdi"></div>
+                    <div style="flex:1"><input type="reset" class="btn btn-primary mb-4" style="margin-left:3rem" value="Ponisti" onclick="ponisti();"></div>
                 </div>
             </form>
         </div>
@@ -48,12 +66,12 @@
         <div id="task-container">
             <div class="taks-wrapper p-3 flex-wrapper">
                 <div style="flex:2">
-                    <button class="btn btn-primary">Dodaj novi dogadjaj</button>
+                    <button class="btn btn-primary" onclick="prikazi();">Dodaj novi dogadjaj</button>
                 </div>
                 <div style="flex:1">
                     <form action="">
                         <label style="margin-right:10px" for="pretraga">Pretraga</label>
-                        <input class="ml-1" name="pretraga" type="text">
+                        <input id="pretraga" oninput="pretrazi();" class="ml-1" name="pretraga" type="text">
                     </form>
                 </div>
             </div>
@@ -62,30 +80,40 @@
                 <div style="flex:2; padding-left:10px; padding-right:10px;">Opis</div>
                 <div style="flex:1">Lokacija</div>
                 <div style="flex:1">Vreme od/do</div>
-                <div style="flex:1">Kreirao</div>
+                <div onclick="sortirajPoKorisniku();" style="flex:1; cursor: pointer;">Kreirao ⇅</div>
                 <div style="flex:1">Uredi/Obrisi</div>
-
             </div>
-            <div class="task-wrapper flex-wrapper align-items-center">
-                <div class="text-center" style="flex:1">Fon hakaton</div>
-                <div class="opis" style="flex:2; padding-left:10px; padding-right:10px;">Fon hakaton je takmicenje u programiranju u trajanju od 24h</div>
-                <div class="text-center" style="flex:1">Jove Ilica 124</div>
-                <div class="text-center" style="flex:1">
-                    <div class="flex-row">
-                        <div class="pb-3">23.1.2010 10:00</div>
-                        <div>24.1.2010 11:00</div>
+            <div id="data">
+                <?php
+                    foreach(array_reverse($data) as $row):
+                ?>
+                <div class="task-wrapper flex-wrapper align-items-center">
+                    <div id="naslov" class="text-center" style="flex:1; font-weight:bolder; color:royalblue"><?php echo $row['naslov'] ?></div>
+                    <div id="opis" class="opis" style="flex:2; padding-left:10px; padding-right:10px;"><?php echo $row['opis'] ?></div>
+                    <div id="lokacija" class="text-center" style="flex:1"><?php echo $row['lokacija'] ?></div>
+                    <div class="text-center" style="flex:1">
+                        <div class="flex-row">
+                            <div id="vremeod" class="pb-3"><?php echo $row['vremeod'] ?></div>
+                            <div id="vremedo"><?php echo $row['vremedo'] ?></div>
+                        </div>
+                    </div>
+                    <div class="text-center" style="flex:1"><?php echo $row['username'] ?></div>
+                    <div class="text-center" style="flex:1">
+                        <div>
+                            <button class="btn btn-primary" 
+                            onclick="uredi(<?php echo $row['id'] ?>, '<?php echo $row['naslov'] ?>', '<?php echo $row['opis'] ?>', '<?php echo $row['lokacija'] ?>', '<?php echo $row['vremeod'] ?>', '<?php echo $row['vremedo'] ?>');">Uredi</button>
+                            <div class="break"></div>
+                            <button class="btn btn-danger" onclick="obrisi(<?php echo $row['id'] ?>);">Obrisi</button>
+                        </div>
                     </div>
                 </div>
-                <div class="text-center" style="flex:1">Andjela</div>
-                <div class="text-center" style="flex:1">
-                    <div>
-                        <button class="btn btn-primary">Uredi</button>
-                        <div class="break"></div>
-                        <button class="btn btn-danger">Obrisi</button>
-                    </div>
-                </div>
+                <?php
+                    endforeach;
+                ?>
             </div>
         </div>
     </div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="js/main.js"></script>
 </body>
 </html>
