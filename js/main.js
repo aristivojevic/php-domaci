@@ -106,3 +106,35 @@ function obrisi(id1){
 
     activeItem = false;
 }
+
+function sortirajPoKorisniku() {
+
+    var toSort = document.getElementById('data').children;
+    toSort = Array.prototype.slice.call(toSort, 0);
+    toSort.sort(function(a, b) {
+        var aord = +a.children[4].innerHTML;
+        var bord = +b.children[4].innerHTML;
+        return (aord > bord) - (aord < bord);
+    });
+
+    var parent = document.getElementById('data');
+    parent.innerHTML = "";
+
+    for(l = toSort.length-1; l>=0; l--) {
+        parent.appendChild(toSort[l]);
+    }
+}
+
+var data = document.getElementById('data').children;
+data = [...data];
+var parent1 = document.getElementById('data');
+var pretraga = document.getElementById('pretraga');
+
+function pretrazi(){ 
+        parent1.innerHTML = "";
+        for (let i = 0; i < data.length; i++) {
+            if(data[i].children[0].innerHTML.toLowerCase().includes(pretraga.value)){
+                parent1.appendChild(data[i]);          
+            }
+        }
+}
